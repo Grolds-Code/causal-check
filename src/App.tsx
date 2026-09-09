@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useMutation, useQuery } from 'convex/react'
+import { useAction, useMutation, useQuery } from 'convex/react'
 import { api } from '../convex/_generated/api'
+import type { Id } from '../convex/_generated/dataModel'
 import './App.css'
 
 const examples = [
@@ -10,17 +11,28 @@ const examples = [
   'A randomized controlled trial found that air filters reduce indoor particles.',
 ]
 
+function confidencePercent(value: number) {
+  return Math.round(value <= 1 ? value * 100 : value)
+}
+
 function App() {
   const [text, setText] = useState(examples[0])
   const [source, setSource] = useState('')
   const [error, setError] = useState('')
-  const check = useMutation(api.claims.check)
+  const submitClaim = useAction(api.claimsActions.submitClaim)
+  const deleteClaim = useMutation(api.claims.deleteClaim)
   const claims = useQuery(api.claims.listRecent)
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setError('')
-    try { await check({ text, source: source || undefined }); setSource('') }
+    try { await submitClaim({ text, source: source || undefined }); setSource('') }
     catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to check this claim.') }
+  }
+
+  async function removeClaim(claimId: Id<'claims'>) {
+    if (!window.confirm('Delete this claim and its analysis?')) return
+    try { await deleteClaim({ claimId }) }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to delete this claim.') }
   }
 
   return <main>
@@ -37,9 +49,10 @@ function App() {
     <section className="results" aria-live="polite"><div className="section-heading"><h2>Recent checks</h2><p>Live results stored in Convex</p></div>
       {!claims && <p className="loading">Loading the evidence board…</p>}{claims?.length === 0 && <p className="loading">Your first checked claim will appear here.</p>}
       <div className="claim-grid">{claims?.map((claim: any) => <article className="claim-card" key={claim._id}>
-        <div className="card-top"><span className={`verdict ${claim.verdict}`}>{claim.verdict}</span><strong>{claim.confidence}% confidence</strong></div>
+        <button className="delete-button" type="button" aria-label="Delete claim" title="Delete claim" onClick={() => void removeClaim(claim._id)}>🗑</button>
+        {claim.causalStructure.status === 'pending' ? <><div className="card-top"><span className="verdict insufficient">pending</span><strong>Analyzing…</strong></div><blockquote>“{claim.text}”</blockquote><p>Extracting causal structure and assessing the evidence…</p></> : claim.causalStructure.status === 'error' ? <><div className="card-top"><span className="verdict insufficient">error</span><strong>Analysis failed</strong></div><blockquote>“{claim.text}”</blockquote><p className="caveat">{claim.causalStructure.errorMessage}</p></> : <><div className="card-top"><span className={`verdict ${claim.verdict}`}>{claim.verdict}</span><strong>{confidencePercent(claim.confidence)}% confidence</strong></div>
         <blockquote>“{claim.text}”</blockquote><p>{claim.summary}</p>
-        <dl><div><dt>Evidence type</dt><dd>{claim.studyDesign}</dd></div><div><dt>Key question</dt><dd>{claim.evidence[0]}</dd></div></dl><p className="caveat"><b>Watch for:</b> {claim.caveats[0]}</p>
+        <dl><div><dt>Evidence type</dt><dd>{claim.studyDesign}</dd></div>{!(claim.verdict === 'insufficient' && !claim.source) && <div><dt>Key question</dt><dd>{claim.evidence[0]}</dd></div>}</dl><p className="caveat"><b>Watch for:</b> {claim.caveats[0]}</p></>}
       </article>)}</div>
     </section>
   </main>

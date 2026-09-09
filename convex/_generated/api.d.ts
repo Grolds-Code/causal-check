@@ -9,6 +9,7 @@
  */
 
 import type * as claims from "../claims.js";
+import type * as claimsActions from "../claimsActions.js";
 
 import type {
   ApiFromModules,
@@ -18,6 +19,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   claims: typeof claims;
+  claimsActions: typeof claimsActions;
 }>;
 
 /**
