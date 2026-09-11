@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import schema from "./schema";
 
 const verdict = v.union(v.literal("causal"), v.literal("correlation"), v.literal("insufficient"), v.literal("mixed"));
@@ -12,6 +12,7 @@ export const listRecent = query({
   returns: v.array(schema.doc("claims")),
   handler: async (ctx) => await ctx.db.query("claims").withIndex("by_created_at").order("desc").take(12),
 });
+
 
 export const createPending = internalMutation({
   args: { text: v.string(), source: v.optional(v.string()) }, returns: v.id("claims"),
@@ -45,5 +46,25 @@ export const deleteClaim = mutation({
   handler: async (ctx, args) => {
     await ctx.db.delete(args.claimId);
     return null;
+  },
+});
+
+export const getClaim = internalQuery({
+  args: { claimId: v.id("claims") },
+  handler: async (ctx, args) => await ctx.db.get(args.claimId),
+});
+
+export const setAgentMailStatus = internalMutation({
+  args: {
+    claimId: v.id("claims"),
+    status: v.union(v.literal("sent"), v.literal("error")),
+    recipient: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.claimId, {
+      agentMailStatus: args.status,
+      agentMailRecipient: args.recipient,
+      agentMailSentAt: Date.now(),
+    });
   },
 });

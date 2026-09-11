@@ -99,3 +99,55 @@ export const submitClaim = action({
     return claimId;
   },
 });
+export const askSource = action({
+  args: { claimId: v.id("claims"), recipient: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const claim = await ctx.runQuery(internal.claims.getClaim, { claimId: args.claimId });
+    if (!claim) throw new Error("Claim not found.");
+
+    const edges = claim.causalStructure.edges;
+    const weakestEdge = edges.length
+      ? [...edges].sort((a, b) => a.confidence - b.confidence)[0]
+      : null;
+
+    const questionBody = weakestEdge
+      ? `I'm reviewing the claim: "${claim.text}"\n\nBased on your source, I have a question about one of the weaker links in the causal chain: the connection between "${weakestEdge.from}" and "${weakestEdge.to}" (currently assessed as ${weakestEdge.grounded ? "grounded but low-confidence" : "inferred, not directly stated"}).\n\nCould you clarify: ${weakestEdge.rationale}\n\nThanks for your time.`
+      : `I'm reviewing the claim: "${claim.text}"\n\nI'd like to better understand the study design and evidence behind this claim. Could you share more detail on the methodology used?\n\nThanks for your time.`;
+
+    const apiKey = process.env.AGENTMAIL_API_KEY;
+    if (!apiKey) throw new Error("AGENTMAIL_API_KEY is not configured.");
+
+    const response = await fetch(
+      "https://api.agentmail.to/v0/inboxes/causal-check@agentmail.to/messages/send",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: args.recipient,
+          subject: `Clarifying question: "${claim.text.slice(0, 60)}${claim.text.length > 60 ? "..." : ""}"`,
+          text: questionBody,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      await ctx.runMutation(internal.claims.setAgentMailStatus, {
+        claimId: args.claimId,
+        status: "error",
+        recipient: args.recipient,
+      });
+      throw new Error(`AgentMail send failed (${response.status}).`);
+    }
+
+    await ctx.runMutation(internal.claims.setAgentMailStatus, {
+      claimId: args.claimId,
+      status: "sent",
+      recipient: args.recipient,
+    });
+    return null;
+  },
+});

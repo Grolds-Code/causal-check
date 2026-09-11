@@ -5,6 +5,7 @@ import { api } from '../convex/_generated/api'
 import type { Id } from '../convex/_generated/dataModel'
 import './App.css'
 import CausalGraph from './CausalGraph'
+import AskSourceBlock from './AskSourceBlock'
 
 const examples = [
   'Drinking coffee causes longer life.',
@@ -21,6 +22,7 @@ function App() {
   const [source, setSource] = useState('')
   const [error, setError] = useState('')
   const submitClaim = useAction(api.claimsActions.submitClaim)
+  const askSource = useAction(api.claimsActions.askSource)
   const deleteClaim = useMutation(api.claims.deleteClaim)
   const claims = useQuery(api.claims.listRecent)
 
@@ -35,6 +37,7 @@ function App() {
     try { await deleteClaim({ claimId }) }
     catch (cause) { setError(cause instanceof Error ? cause.message : 'Unable to delete this claim.') }
   }
+
 
   return <main>
     <header><p className="eyebrow">CAUSAL CHECK</p><h1>Does the evidence show cause — or only company?</h1><p className="intro">Paste a viral science claim for a fast, structured causal reasoning check. This is an evidence-reading aid, not a substitute for the original research.</p></header>
@@ -58,6 +61,9 @@ function App() {
   edges={claim.causalStructure.edges}
   emptyMessage={claim.source ? 'No causal structure could be extracted for this claim.' : 'Not enough structure to map — no source was provided.'}
 />
+                      {claim.source && (
+          <AskSourceBlock claimId={claim._id} lastSentTo={claim.agentMailRecipient} />
+        )}
         <dl><div><dt>Evidence type</dt><dd>{claim.studyDesign}</dd></div>{!(claim.verdict === 'insufficient' && !claim.source) && <div><dt>Key question</dt><dd>{claim.evidence[0]}</dd></div>}</dl><p className="caveat"><b>Watch for:</b> {claim.caveats[0]}</p></>}
       </article>)}</div>
     </section>

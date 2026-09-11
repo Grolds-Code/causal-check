@@ -19,5 +19,8 @@ export default defineSchema({
     text: v.string(), source: v.optional(v.string()), verdict, confidence: v.number(),
     summary: v.string(), studyDesign: v.string(), causalPathway: v.string(),
     evidence: v.array(v.string()), caveats: v.array(v.string()), causalStructure, createdAt: v.number(),
+    agentMailStatus: v.optional(v.union(v.literal("sent"), v.literal("error"))),
+    agentMailRecipient: v.optional(v.string()),
+    agentMailSentAt: v.optional(v.number()),
   }).index("by_created_at", ["createdAt"]),
 });

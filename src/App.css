@@ -10,3 +10,21 @@ main { max-width: 1120px; margin: 0 auto; padding: 72px 28px; } header { max-wid
 .causal-graph-tooltip { margin-top: 10px; padding: 10px 12px; background: #fff; border: 1px solid #e3ded0; border-radius: 8px; position: relative; font-size: 13px; }
 .causal-graph-tooltip button { position: absolute; top: 6px; right: 8px; border: none; background: none; font-size: 16px; cursor: pointer; color: #7a7368; }
 .causal-graph-hint { font-size: 12px; color: #9a9382; margin: 8px 0 0; font-style: italic; }
+.ask-source-button { margin: 10px 0; padding: 8px 14px; border: 1px solid #3b6fb0; background: #eef4fc; color: #2b4c76; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.ask-source-button:hover { background: #dbe9ff; }
+.agentmail-status { margin: 10px 0; font-size: 13px; color: #2f7a4f; }
+.ask-source-block { margin: 10px 0; }
+.ask-source-hint { font-size: 12px; color: #7a7368; margin: 0 0 6px; font-style: italic; }
+.ask-source-block { margin: 10px 0; }
+.ask-source-hint { font-size: 12px; color: #7a7368; margin: 0 0 6px; font-style: italic; }
+.ask-source-button { padding: 8px 14px; border: 1px solid #3b6fb0; background: #eef4fc; color: #2b4c76; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.ask-source-button:hover { background: #dbe9ff; }
+.ask-source-form { display: flex; flex-direction: column; gap: 6px; max-width: 320px; }
+.ask-source-form label { font-size: 12px; color: #5c574a; }
+.ask-source-form input { padding: 7px 10px; border: 1px solid #d8d2c2; border-radius: 6px; font-size: 13px; }
+.ask-source-form-buttons { display: flex; gap: 8px; }
+.ask-source-form-buttons button { padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid #3b6fb0; background: #3b6fb0; color: #fff; }
+.ask-source-form-buttons button:disabled { opacity: 0.6; cursor: default; }
+.ask-source-form-buttons button.secondary { background: #fff; color: #5c574a; border-color: #d8d2c2; }
+.ask-source-error { color: #b23a3a; font-size: 12px; margin: 2px 0 0; }
+.agentmail-status { margin: 8px 0 0; font-size: 12px; color: #2f7a4f; }
