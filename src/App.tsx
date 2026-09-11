@@ -4,6 +4,7 @@ import { useAction, useMutation, useQuery } from 'convex/react'
 import { api } from '../convex/_generated/api'
 import type { Id } from '../convex/_generated/dataModel'
 import './App.css'
+import CausalGraph from './CausalGraph'
 
 const examples = [
   'Drinking coffee causes longer life.',
@@ -52,6 +53,11 @@ function App() {
         <button className="delete-button" type="button" aria-label="Delete claim" title="Delete claim" onClick={() => void removeClaim(claim._id)}>🗑</button>
         {claim.causalStructure.status === 'pending' ? <><div className="card-top"><span className="verdict insufficient">pending</span><strong>Analyzing…</strong></div><blockquote>“{claim.text}”</blockquote><p>Extracting causal structure and assessing the evidence…</p></> : claim.causalStructure.status === 'error' ? <><div className="card-top"><span className="verdict insufficient">error</span><strong>Analysis failed</strong></div><blockquote>“{claim.text}”</blockquote><p className="caveat">{claim.causalStructure.errorMessage}</p></> : <><div className="card-top"><span className={`verdict ${claim.verdict}`}>{claim.verdict}</span><strong>{confidencePercent(claim.confidence)}% confidence</strong></div>
         <blockquote>“{claim.text}”</blockquote><p>{claim.summary}</p>
+<CausalGraph
+  nodes={claim.causalStructure.nodes}
+  edges={claim.causalStructure.edges}
+  emptyMessage={claim.source ? 'No causal structure could be extracted for this claim.' : 'Not enough structure to map — no source was provided.'}
+/>
         <dl><div><dt>Evidence type</dt><dd>{claim.studyDesign}</dd></div>{!(claim.verdict === 'insufficient' && !claim.source) && <div><dt>Key question</dt><dd>{claim.evidence[0]}</dd></div>}</dl><p className="caveat"><b>Watch for:</b> {claim.caveats[0]}</p></>}
       </article>)}</div>
     </section>
