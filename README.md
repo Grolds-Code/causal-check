@@ -2,7 +2,7 @@
 
 **Is that a cause, or just a coincidence?**
 
-A live causal-reasoning checker for viral science and health claims. Paste a claim — and optionally a source — and Causal Check extracts the underlying causal structure (treatment, outcome, confounders, colliders, mediators) as an interactive diagram, clearly distinguishing evidence that's grounded in the source from reasoning that's merely inferred.
+A live causal-reasoning checker for viral science and health claims. Paste a claim, and optionally a source, and Causal Check extracts the underlying causal structure (treatment, outcome, confounders, colliders, mediators) as an interactive diagram, clearly distinguishing evidence that's grounded in the source from reasoning that's merely inferred.
 
 Built for the [Convex All Gas Hackathon](https://www.convex.dev/hackathons/all-gas).
 
