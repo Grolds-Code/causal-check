@@ -2,17 +2,25 @@
 
 - **Project:** Causal Check
 - **Event:** Convex All Gas Hackathon
-- **What it does:** A live causal-reasoning checker for viral science and health claims. Users paste a claim (and optionally a source), and the app extracts the underlying causal structure — treatment, outcome, confounders, colliders, mediators — as an interactive diagram, distinguishing evidence that's *grounded* in the crawled source from reasoning that's merely *inferred*. Every completed check can trigger a real clarifying question emailed to a source/reviewer, and semantically similar past claims are surfaced automatically.
-- **Live app:** [to be filled in after deployment]
+- **What it does:** A live causal-reasoning checker for viral science and health claims. Users paste a claim (and optionally a source), and the app extracts the underlying causal structure as an interactive **DAG (directed acyclic graph)** — treatment, outcome, confounders, colliders, mediators — visually distinguishing evidence that's *grounded* in the crawled source from reasoning that's merely *inferred*. Every completed check can trigger a real clarifying question emailed to a source/reviewer, and semantically similar past claims are surfaced automatically via vector search.
+- **Live app:** [fill in after deployment]
 - **Repo:** https://github.com/Grolds-Code/causal-check
 - **Convex deployment:** production (deployed via @convex-dev/static-hosting)
+
+## Why this project stands out
+
+- **The DAG is the centerpiece, not decoration.** Rather than just outputting a text verdict, the app renders the actual causal structure it inferred — a hand-built, responsive SVG diagram with color-coded node types (treatment/outcome/confounder/collider/mediator), solid vs. dashed edges for grounded vs. inferred claims, and tap/click-to-inspect reasoning on every node and edge. This makes the model's reasoning auditable, not just assertable.
+- **Genuine causal-inference rigor, not a fact-checking wrapper.** The model is explicitly instructed never to overstate confidence, and every claimed causal link is separately flagged as grounded (directly supported by the crawled source) or inferred (plausible but not established) — a distinction most AI fact-checkers collapse into a single confidence score.
+- **All three sponsor tools do real, load-bearing work**, not decorative integration: Firecrawl retrieves actual source content, OpenAI performs structured causal extraction *and* generates embeddings, and AgentMail sends genuinely content-aware outbound emails built from the specific weakest link in each claim's causal chain.
+- **Convex Vector Search adds a layer most entrants won't touch.** Every claim is embedded and checked against prior claims for semantic similarity — not keyword matching — surfacing related past checks even when worded completely differently, and demonstrating a Convex capability well beyond basic CRUD.
+- **Built for real people, on a real problem.** Viral health/science misinformation is a universal, everyday pain point — not a niche or a developer tool.
 
 ## Convex features used
 - **Actions** (`submitClaim`, `askSource`) orchestrating external API calls (Firecrawl, OpenAI, AgentMail) without blocking the UI
 - **Mutations** for pending/complete/error state transitions, so the UI updates live as analysis progresses
 - **Reactive queries** (`listRecent`) powering the live "Recent checks" feed with zero manual polling
-- **Vector Search** — claim text is embedded via OpenAI and indexed in Convex; every new claim is checked against prior claims for semantic similarity (not just keyword matching), surfacing related past checks even when worded completely differently
-- **Schema-enforced structured data** for the causal graph (nodes/edges with type, confidence, and grounding), validated end-to-end from OpenAI's structured output through to the rendered diagram
+- **Vector Search** — claim text is embedded via OpenAI and indexed in Convex; every new claim is checked against prior claims for semantic similarity
+- **Schema-enforced structured data** for the causal DAG (nodes/edges with type, confidence, and grounding), validated end-to-end from OpenAI's structured output through to the rendered diagram
 
 ## Sponsor stack — how each is used
 - **OpenAI**: extracts causal structure (nodes, edges, confidence, grounding) as strict structured JSON from the claim + crawled source, using a reasoning model with explicit instructions against overconfidence; also generates the claim's text embedding for similarity search
@@ -26,7 +34,7 @@ The project was scaffolded and initially built using Codex CLI with the official
 2026-09-08T12:42:49Z
 
 ## Last updated
-[update this to today's date when you finalize before submission]
+[fill in with today's date before final submission]
 
 ## Log
 - Scaffolded React + Convex app via Codex and the official Convex plugin
