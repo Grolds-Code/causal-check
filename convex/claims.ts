@@ -68,3 +68,24 @@ export const setAgentMailStatus = internalMutation({
     });
   },
 });
+
+export const getClaimsByIds = internalQuery({
+  args: { claimIds: v.array(v.id("claims")) },
+  handler: async (ctx, args) => {
+    const results = await Promise.all(args.claimIds.map((id) => ctx.db.get(id)));
+    return results.filter((doc): doc is NonNullable<typeof doc> => doc !== null);
+  },
+});
+
+export const saveEmbeddingAndSimilar = internalMutation({
+  args: {
+    claimId: v.id("claims"),
+    embedding: v.array(v.float64()),
+    similarClaims: v.array(v.object({ claimId: v.id("claims"), text: v.string(), verdict: v.string(), score: v.number() })),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.claimId, { embedding: args.embedding, similarClaims: args.similarClaims });
+    return null;
+  },
+});

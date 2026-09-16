@@ -81,6 +81,24 @@ async function analyzeClaim(text: string, sourceContent?: string): Promise<Asses
     throw new StructuredOutputError(rawResponse);
   }
 }
+async function embedText(text: string): Promise<number[]> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error("OPENAI_API_KEY is not configured.");
+  const response = await fetch("https://api.openai.com/v1/embeddings", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "text-embedding-3-small", input: text }),
+  });
+  if (!response.ok) throw new Error(`OpenAI embedding failed (${response.status}).`);
+  const body: unknown = await response.json();
+  const embedding = typeof body === "object" && body !== null && "data" in body && Array.isArray((body as { data?: unknown }).data)
+    ? (body as { data: Array<{ embedding?: unknown }> }).data[0]?.embedding
+    : undefined;
+  if (!Array.isArray(embedding) || !embedding.every((n) => typeof n === "number")) throw new Error("OpenAI returned an invalid embedding.");
+  return embedding;
+}
+const SIMILARITY_THRESHOLD = 0.84;
+
 export const submitClaim = action({
   args: { text: v.string(), source: v.optional(v.string()) }, returns: v.id("claims"),
   handler: async (ctx, args): Promise<Id<"claims">> => {
@@ -92,6 +110,23 @@ export const submitClaim = action({
     try {
       const assessment = await analyzeClaim(text, source ? await scrapeSource(source) : undefined);
       await ctx.runMutation(internal.claims.completeAnalysis, { claimId, ...assessment, causalStructure: { status: "complete", ...assessment.causalStructure } });
+
+      try {
+        const embedding = await embedText(text);
+        const matches = await ctx.vectorSearch("claims", "by_embedding", { vector: embedding, limit: 6 });
+        const candidateIds = matches.filter((m) => m._id !== claimId).map((m) => m._id);
+        const candidates = candidateIds.length ? await ctx.runQuery(internal.claims.getClaimsByIds, { claimIds: candidateIds }) : [];
+        const scoreById = new Map(matches.map((m) => [m._id, m._score]));
+        const similarClaims = candidates
+          .filter((c) => c.causalStructure.status === "complete")
+          .map((c) => ({ claimId: c._id, text: c.text, verdict: c.verdict, score: scoreById.get(c._id) ?? 0 }))
+          .filter((c) => c.score >= SIMILARITY_THRESHOLD)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 2);
+        await ctx.runMutation(internal.claims.saveEmbeddingAndSimilar, { claimId, embedding, similarClaims });
+      } catch (embedCause) {
+        console.log("Embedding/similarity step failed (non-fatal)", message(embedCause));
+      }
     } catch (cause) {
       const errorMessage = cause instanceof StructuredOutputError ? cause.rawResponse : message(cause);
       await ctx.runMutation(internal.claims.markError, { claimId, errorMessage });

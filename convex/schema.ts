@@ -22,5 +22,9 @@ export default defineSchema({
     agentMailStatus: v.optional(v.union(v.literal("sent"), v.literal("error"))),
     agentMailRecipient: v.optional(v.string()),
     agentMailSentAt: v.optional(v.number()),
-  }).index("by_created_at", ["createdAt"]),
+    embedding: v.optional(v.array(v.float64())),
+    similarClaims: v.optional(v.array(v.object({ claimId: v.id("claims"), text: v.string(), verdict: v.string(), score: v.number() }))),
+  })
+    .index("by_created_at", ["createdAt"])
+    .vectorIndex("by_embedding", { vectorField: "embedding", dimensions: 1536 }),
 });
