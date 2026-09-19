@@ -38,9 +38,9 @@ export default function AskSourceBlock({ claimId, lastSentTo }: AskSourceBlockPr
     <div className="ask-source-block">
       {!isOpen ? (
         <>
-          <p className="ask-source-hint">Click to ask the source a clarifying question about its weakest causal link</p>
+          <p className="ask-source-hint">We'll auto-generate a clarifying question about this claim's weakest causal link — you just choose who receives it</p>
           <button type="button" className="ask-source-button" onClick={() => setIsOpen(true)}>
-            Ask the source →
+            Send a clarifying question →
           </button>
         </>
       ) : (

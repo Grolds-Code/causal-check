@@ -89,3 +89,15 @@ export const saveEmbeddingAndSimilar = internalMutation({
     return null;
   },
 });
+
+export const countRecentSubmissions = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = Date.now() - 60_000;
+    const recent = await ctx.db
+      .query("claims")
+      .withIndex("by_created_at", (q) => q.gt("createdAt", cutoff))
+      .collect();
+    return recent.length;
+  },
+});

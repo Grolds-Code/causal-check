@@ -106,6 +106,8 @@ export const submitClaim = action({
     if (text.length < 12 || text.length > 800) throw new Error("Enter a claim between 12 and 800 characters.");
     const source = args.source?.trim();
     if (source && source.length > 240) throw new Error("Source must be 240 characters or fewer.");
+    const recentCount = await ctx.runQuery(internal.claims.countRecentSubmissions, {});
+    if (recentCount >= 8) throw new Error("This tool is getting heavy use right now. Please wait a minute and try again.");
     const claimId: Id<"claims"> = await ctx.runMutation(internal.claims.createPending, { text, source: source || undefined });
     try {
       const assessment = await analyzeClaim(text, source ? await scrapeSource(source) : undefined);
@@ -147,8 +149,8 @@ export const askSource = action({
       : null;
 
     const questionBody = weakestEdge
-      ? `I'm reviewing the claim: "${claim.text}"\n\nBased on your source, I have a question about one of the weaker links in the causal chain: the connection between "${weakestEdge.from}" and "${weakestEdge.to}" (currently assessed as ${weakestEdge.grounded ? "grounded but low-confidence" : "inferred, not directly stated"}).\n\nCould you clarify: ${weakestEdge.rationale}\n\nThanks for your time.`
-      : `I'm reviewing the claim: "${claim.text}"\n\nI'd like to better understand the study design and evidence behind this claim. Could you share more detail on the methodology used?\n\nThanks for your time.`;
+      ? `I'm looking into this claim: "${claim.text}"\n\nA structured causal analysis flagged one of the weaker links in the reasoning: the connection between "${weakestEdge.from}" and "${weakestEdge.to}" (currently assessed as ${weakestEdge.grounded ? "grounded but low-confidence" : "inferred, not directly stated in the available source"}).\n\nI'd appreciate your thoughts: ${weakestEdge.rationale}\n\nThanks for taking a look.`
+      : `I'm looking into this claim: "${claim.text}"\n\nI'd like to better understand the study design and evidence behind it. Could you share your thoughts on the methodology or point me to a relevant source?\n\nThanks for taking a look.`;
 
     const apiKey = process.env.AGENTMAIL_API_KEY;
     if (!apiKey) throw new Error("AGENTMAIL_API_KEY is not configured.");
