@@ -10,6 +10,7 @@
 
 import type * as claims from "../claims.js";
 import type * as claimsActions from "../claimsActions.js";
+import type * as http from "../http.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   claims: typeof claims;
   claimsActions: typeof claimsActions;
+  http: typeof http;
 }>;
 
 /**
@@ -48,4 +50,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  staticHosting: import("@convex-dev/static-hosting/_generated/component.js").ComponentApi<"staticHosting">;
+};
