@@ -4,6 +4,7 @@
 - **Event:** Convex All Gas Hackathon
 - **What it does:** A live causal-reasoning checker for viral science and health claims. Users paste a claim, optionally with a source, and the app extracts the underlying causal structure as an interactive DAG (directed acyclic graph): treatment, outcome, confounders, colliders, and mediators, visually distinguishing evidence that is *grounded* in the crawled source from reasoning that is merely *inferred*. Every completed check can trigger a real clarifying question emailed to a source or reviewer, and semantically similar past claims are surfaced automatically through vector search.
 - **Live app:** https://admired-fennec-408.convex.site
+- **Demo video:** https://www.loom.com/share/813682309f1d4ef2955bd4c516c757fd
 - **Repo:** https://github.com/Grolds-Code/causal-check
 - **Convex deployment:** production (deployed via @convex-dev/static-hosting)
 
@@ -34,7 +35,7 @@ The project was scaffolded and initially built using Codex CLI with the official
 2026-09-08T12:42:49Z
 
 ## Last updated
-2026-09-19
+2026-09-22
 
 ## Log
 - Scaffolded React and Convex app via Codex and the official Convex plugin.
